@@ -1,0 +1,472 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Ecommerce Dashboard</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: a filter toolbar over a 12-column grid of cards, grouped under quiet section labels (Overview, Audience, SEO, Pages, Events). */
+:root{
+  --bg:#f4f5f4; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10); --hover:rgba(11,11,11,.045);
+  --accent:#2a78d6; --accent-ink:#ffffff;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s6:#008300;
+  --st1:#86b6ef; --st2:#5598e7; --st3:#2a78d6; --st4:#1c5cab;
+  --warn-bg:#fff4d6; --warn-ink:#5a4000; --err-ink:#a12828;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --hover:rgba(255,255,255,.06);
+  --accent:#3987e5; --accent-ink:#0b0b0b;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300;
+  --st1:#256abf; --st2:#3987e5; --st3:#6da7ec; --st4:#9ec5f4;
+  --warn-bg:#3a2e08; --warn-ink:#f3d98a; --err-ink:#f09090; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --hover:rgba(255,255,255,.06);
+  --accent:#3987e5; --accent-ink:#0b0b0b;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s6:#008300;
+  --st1:#256abf; --st2:#3987e5; --st3:#6da7ec; --st4:#9ec5f4;
+  --warn-bg:#3a2e08; --warn-ink:#f3d98a; --err-ink:#f09090; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.45;
+  padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1360px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px}
+h1{font-size:22px;font-weight:650;letter-spacing:-.01em;margin:0}
+.sub{color:var(--ink2);font-size:13px}
+.tool{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;display:grid;gap:12px 14px;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));align-items:end}
+.tool label{display:flex;flex-direction:column;gap:4px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);min-width:0}
+.tool input,.tool select{font:inherit;font-size:13px;letter-spacing:0;text-transform:none;color:var(--ink);background:var(--bg);
+  border:1px solid var(--border);border-radius:6px;padding:7px 8px;min-width:0;width:100%}
+.tool .wide{grid-column:span 2}
+@media (max-width:520px){.tool .wide{grid-column:span 1}}
+button{font:inherit;cursor:pointer}
+.run{background:var(--accent);color:var(--accent-ink);border:0;border-radius:6px;padding:9px 14px;font-weight:600;font-size:13px}
+.run:disabled{opacity:.6;cursor:progress}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#banner{border-radius:8px;padding:10px 14px;font-size:13px;background:var(--warn-bg);color:var(--warn-ink);border:1px solid var(--border)}
+#banner[hidden]{display:none}
+.sec{display:flex;align-items:center;gap:12px;margin-top:10px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink2);font-weight:600}
+.sec::after{content:"";flex:1;height:1px;background:var(--axis)}
+.grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px}
+.card{grid-column:span var(--span,12);background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;min-width:0;display:flex;flex-direction:column;gap:10px}
+@media (max-width:920px){.card{grid-column:span 12}}
+.ch{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ch h2{margin:0;font-size:13px;font-weight:600}
+.sqlb{background:none;border:1px solid var(--border);color:var(--ink2);border-radius:5px;font-size:11px;padding:2px 7px;letter-spacing:.04em}
+.sqlb:hover{background:var(--hover)}
+.sqlp{border-top:1px solid var(--grid);padding-top:8px}
+.sqlp pre{margin:6px 0 0;max-height:260px;overflow:auto;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--bg);border-radius:6px;padding:10px;white-space:pre}
+.sqlp .row{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--ink2);gap:8px}
+.viz{min-width:0}
+.state{display:grid;place-items:center;min-height:120px;text-align:center;color:var(--muted);font-size:13px;border:1px dashed var(--axis);border-radius:8px;padding:14px}
+.state.err{color:var(--err-ink)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0}
+.kpi{padding:10px 14px;border-left:1px solid var(--grid);min-width:0}
+.kpi:first-child{border-left:0}
+.kpi dt{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 2px}
+.kpi dd{margin:0;font-size:24px;font-weight:600;letter-spacing:-.01em;overflow-wrap:anywhere}
+svg{display:block;max-width:100%}
+svg .grid{stroke:var(--grid);stroke-width:1}
+svg .axis{stroke:var(--axis);stroke-width:1}
+svg .tick{fill:var(--muted);font-size:11px;font-family:var(--sans)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--ink2);margin-bottom:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.minis{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.mini .mh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:12px;color:var(--ink2)}
+.mini .mh b{font-size:18px;font-weight:600;color:var(--ink)}
+.hb{display:flex;flex-direction:column;gap:7px}
+.hbr{display:grid;grid-template-columns:minmax(80px,38%) 1fr auto;align-items:center;gap:10px;font-size:12px;padding:1px 0;border-radius:4px}
+.hbr:hover{background:var(--hover)}
+.hbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink2)}
+.hbt{height:14px;background:transparent}
+.hbt i{display:block;height:100%;border-radius:0 4px 4px 0;min-width:2px}
+.hbv{font-variant-numeric:tabular-nums;color:var(--ink);min-width:3ch;text-align:right}
+.vb{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.vbc{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;border-radius:4px}
+.vbc:hover{background:var(--hover)}
+.vbt{height:170px;width:100%;display:flex;align-items:flex-end;justify-content:center}
+.vbt i{display:block;width:70%;max-width:34px;border-radius:4px 4px 0 0;min-height:2px}
+.vbl{color:var(--ink2)}.vbv{color:var(--ink);font-variant-numeric:tabular-nums}
+.tw{overflow:auto;max-height:440px;border:1px solid var(--grid);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:7px 10px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--grid)}
+th{position:sticky;top:0;background:var(--surface);color:var(--muted);font-weight:600;font-size:11px;letter-spacing:.05em;text-transform:uppercase;z-index:1;border-bottom:1px solid var(--axis)}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+td.pg{max-width:520px;overflow:hidden;text-overflow:ellipsis}
+tbody tr:hover{background:var(--hover)}
+.pill{font-size:11px;border:1px solid var(--axis);border-radius:999px;padding:1px 8px;color:var(--ink2)}
+.big{display:flex;flex-direction:column;gap:2px;justify-content:center;min-height:140px}
+.big b{font-size:44px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.big span{color:var(--ink2);font-size:13px}
+.tip{position:fixed;z-index:50;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--axis);border-radius:6px;padding:7px 9px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.14);max-width:260px}
+.tip[hidden]{display:none}
+.tip b{font-weight:600}.tip div{display:flex;justify-content:space-between;gap:12px}
+.note{font-size:12px;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){.hbt i,.vbt i{transition:width .3s,height .3s}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Ecommerce Dashboard</h1>
+    <span class="sub">GA4 export for the Google Merchandise Store, read live from BigQuery</span>
+  </header>
+
+  <div id="banner" hidden role="status"></div>
+
+  <form class="tool" id="tool" autocomplete="off">
+    <label class="wide">Google Cloud project ID (bills the queries)
+      <input id="project" placeholder="my-gcp-project" spellcheck="false"></label>
+    <label>Date range
+      <select id="preset">
+        <option value="full">Full sample (Nov 2020 to Jan 2021)</option>
+        <option value="nov">November 2020</option>
+        <option value="dec">December 2020</option>
+        <option value="jan">January 2021</option>
+        <option value="custom">Custom</option>
+      </select></label>
+    <label>From <input type="date" id="start"></label>
+    <label>To <input type="date" id="end"></label>
+    <label>Group trends by
+      <select id="grain"><option value="DAY">Day</option><option value="WEEK" selected>Week</option><option value="MONTH">Month</option></select></label>
+    <label>Channel group
+      <select id="channel"><option value="">All channels</option></select></label>
+    <label>Country
+      <input id="country" list="countries" placeholder="All countries"><datalist id="countries"></datalist></label>
+    <label>Device category
+      <select id="device"><option value="">All devices</option><option>desktop</option><option>mobile</option><option>tablet</option></select></label>
+    <button class="run" id="run" type="submit">Run queries</button>
+  </form>
+
+  <div id="app" style="display:flex;flex-direction:column;gap:14px"></div>
+
+  <p class="note">Source: bigquery-public-data.ga4_obfuscated_sample_ecommerce, 1 Nov 2020 to 31 Jan 2021. Channel, source and medium come from the user's first-touch traffic_source, because this export has no session-level attribution. Every card has an SQL button, so the same query can be pasted into the BigQuery console.</p>
+</div>
+
+<script>
+(function(){
+'use strict';
+var SERVER='Google Cloud BigQuery';
+var TBL='`bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`';
+var MIN='2020-11-01', MAX='2021-01-31';
+var STAGES=[['view_item','View item','var(--st1)'],['add_to_cart','Add to cart','var(--st2)'],['begin_checkout','Begin checkout','var(--st3)'],['purchase','Purchase','var(--st4)']];
+var KEY_EVENTS=STAGES.map(function(s){return s[0]});
+var CH=['Direct','Organic Search','Paid Search','Referral','Email','Unassigned'];
+var CHCOL={'Direct':'var(--s1)','Organic Search':'var(--s2)','Paid Search':'var(--s3)','Referral':'var(--s4)','Email':'var(--s5)','Unassigned':'var(--s6)'};
+var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var FATAL={server_not_connected:1,needs_reauth:1,not_in_manifest:1,blocked_by_policy:1,approval_required:1,selection_required:1,not_granted:1,capability_disabled:1,capability_removed:1,consent_required:1};
+
+var $=function(s){return document.querySelector(s)};
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function N(v){var n=Number(v);return isFinite(n)?n:0}
+function fInt(n){return Math.round(n).toLocaleString('en-US')}
+function fCmp(n){var a=Math.abs(n);if(a>=1e6)return (n/1e6).toFixed(2).replace(/\.?0+$/,'')+'M';if(a>=1e4)return (n/1e3).toFixed(1).replace(/\.0$/,'')+'K';return fInt(n)}
+function fUsd(n){return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function fUsdC(n){return '$'+fCmp(n)}
+function fPct(n){return (n*100).toFixed(2)+'%'}
+function fDec(n){return n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function lit(s){return "'"+String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'")+"'"}
+function dlabel(x,grain){var p=x.slice(0,10).split('-');var m=MON[+p[1]-1];return grain==='MONTH'?m+' '+p[0]:m+' '+(+p[2])}
+
+/* ---------- state ---------- */
+var state={project:'',start:MIN,end:MAX,grain:'WEEK',channel:'',country:'',device:''};
+var ran=null,runId=0,mcp=null,argKeys=null;
+var data={},status={},errors={};
+
+/* ---------- SQL ---------- */
+function cte(S){
+  var sfx=function(d){return d.replace(/-/g,'')};
+  var c=[];
+  if(S.channel)c.push('channel = '+lit(S.channel));
+  if(S.country)c.push('country = '+lit(S.country));
+  if(S.device)c.push('device_category = '+lit(S.device));
+  var chan="CASE\n      WHEN LOWER(traffic_source.source) = '(direct)' AND LOWER(traffic_source.medium) IN ('(none)', '(not set)') THEN 'Direct'\n      WHEN traffic_source.medium = 'organic' THEN 'Organic Search'\n      WHEN traffic_source.medium IN ('cpc', 'ppc', 'paid') THEN 'Paid Search'\n      WHEN traffic_source.medium = 'email' THEN 'Email'\n      WHEN traffic_source.medium = 'referral' THEN 'Referral'\n      ELSE 'Unassigned'\n    END";
+  return "WITH base AS (\n  SELECT\n    PARSE_DATE('%Y%m%d', event_date) AS d,\n    event_name,\n    user_pseudo_id,\n    CONCAT(user_pseudo_id, '.', CAST((SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'ga_session_id') AS STRING)) AS session_id,\n    (SELECT value.string_value FROM UNNEST(event_params) WHERE key = 'page_location') AS page_location,\n    (SELECT value.int_value FROM UNNEST(event_params) WHERE key = 'engagement_time_msec') AS eng_ms,\n    (SELECT COALESCE(value.string_value, CAST(value.int_value AS STRING)) FROM UNNEST(event_params) WHERE key = 'session_engaged') AS session_engaged,\n    traffic_source.source AS source,\n    traffic_source.medium AS medium,\n    "+chan+" AS channel,\n    device.category AS device_category,\n    device.operating_system AS os,\n    device.web_info.browser AS browser,\n    geo.country AS country,\n    ecommerce.purchase_revenue AS revenue\n  FROM "+TBL+"\n  WHERE _TABLE_SUFFIX BETWEEN '"+sfx(S.start)+"' AND '"+sfx(S.end)+"'\n),\nf AS (\n  SELECT * FROM base\n  WHERE TRUE"+c.map(function(x){return '\n    AND '+x}).join('')+"\n)\n";
+}
+function G(S){return S.grain==='DAY'?'d':S.grain==='MONTH'?'DATE_TRUNC(d, MONTH)':'DATE_TRUNC(d, WEEK(MONDAY))'}
+function dimQ(S,col,lim){return cte(S)+"SELECT\n  IFNULL("+col+", '(not set)') AS dim,\n  COUNT(DISTINCT session_id) AS sessions,\n  COUNTIF(event_name = 'purchase') AS transactions,\n  SUM(IF(event_name = 'purchase', revenue, 0)) AS revenue\nFROM f\nGROUP BY 1\nORDER BY sessions DESC\nLIMIT "+lim}
+var KEYLIST=KEY_EVENTS.map(lit).join(', ');
+var Q={
+  kpi:function(S){return cte(S)+"SELECT\n  COUNT(DISTINCT IF(IFNULL(eng_ms, 0) > 0 OR session_engaged = '1', user_pseudo_id, NULL)) AS active_users,\n  COUNT(DISTINCT IF(event_name = 'first_visit', user_pseudo_id, NULL)) AS new_users,\n  COUNT(DISTINCT session_id) AS sessions,\n  COUNT(DISTINCT IF(session_engaged = '1', session_id, NULL)) AS engaged_sessions,\n  SUM(IFNULL(revenue, 0)) AS total_revenue,\n  SUM(IF(event_name = 'purchase', revenue, 0)) AS purchase_revenue,\n  COUNTIF(event_name = 'purchase') AS transactions,\n  COUNTIF(event_name IN ("+KEYLIST+")) AS key_events,\n  COUNT(*) AS events,\n  COUNTIF(event_name = 'purchase' AND channel = 'Organic Search') AS organic_transactions\nFROM f"},
+  trend:function(S){return cte(S)+"SELECT\n  "+G(S)+" AS period,\n  SUM(IF(event_name = 'purchase', revenue, 0)) AS revenue,\n  COUNTIF(event_name = 'purchase') AS transactions\nFROM f\nGROUP BY 1\nORDER BY 1"},
+  conv:function(S){return cte(S)+"SELECT\n  "+G(S)+" AS period,\n  event_name,\n  COUNT(*) AS n\nFROM f\nWHERE event_name IN ("+KEYLIST+")\nGROUP BY 1, 2\nORDER BY 1"},
+  chan:function(S){return cte(S)+"SELECT\n  "+G(S)+" AS period,\n  channel,\n  COUNT(DISTINCT session_id) AS sessions\nFROM f\nGROUP BY 1, 2\nORDER BY 1"},
+  dow:function(S){return cte(S)+"SELECT\n  EXTRACT(DAYOFWEEK FROM d) AS dow,  -- 1 = Sunday\n  COUNTIF(event_name = 'purchase') AS transactions\nFROM f\nGROUP BY 1\nORDER BY 1"},
+  src:function(S){return cte(S)+"SELECT\n  CONCAT(IFNULL(source, '(not set)'), ' / ', IFNULL(medium, '(not set)')) AS source_medium,\n  COUNT(DISTINCT session_id) AS sessions,\n  COUNTIF(event_name = 'purchase') AS transactions,\n  SUM(IF(event_name = 'purchase', revenue, 0)) AS revenue\nFROM f\nGROUP BY 1\nORDER BY sessions DESC\nLIMIT 50"},
+  dev:function(S){return dimQ(S,'device_category',8)},
+  os:function(S){return dimQ(S,'os',8)},
+  br:function(S){return dimQ(S,'browser',8)},
+  geo:function(S){return dimQ(S,'country',50)},
+  seo:function(S){return cte(S)+"SELECT\n  "+G(S)+" AS period,\n  COUNTIF(event_name = 'purchase') AS transactions,\n  COUNT(DISTINCT session_id) AS sessions\nFROM f\nWHERE channel = 'Organic Search'\nGROUP BY 1\nORDER BY 1"},
+  pages:function(S){return cte(S)+"SELECT\n  REGEXP_EXTRACT(page_location, r'https?://[^/]+(/[^?#]*)') AS page,\n  COUNT(DISTINCT IF(event_name = 'first_visit', user_pseudo_id, NULL)) AS new_users,\n  COUNT(DISTINCT session_id) AS sessions,\n  COUNTIF(event_name = 'page_view') AS views,\n  COUNTIF(event_name = 'purchase') AS transactions,\n  SUM(IF(event_name = 'purchase', revenue, 0)) AS revenue\nFROM f\nWHERE page_location IS NOT NULL\nGROUP BY 1\nORDER BY revenue DESC, sessions DESC\nLIMIT 100"},
+  events:function(S){return cte(S)+"SELECT\n  event_name,\n  COUNT(*) AS event_count,\n  COUNT(DISTINCT user_pseudo_id) AS users,\n  COUNT(DISTINCT session_id) AS sessions,\n  SUM(IF(event_name = 'purchase', revenue, 0)) AS revenue\nFROM f\nGROUP BY 1\nORDER BY event_count DESC"}
+};
+
+/* ---------- charts ---------- */
+var tip=document.createElement('div');tip.className='tip';tip.hidden=true;document.body.appendChild(tip);
+function showTip(html,x,y){tip.innerHTML=html;tip.hidden=false;var r=tip.getBoundingClientRect();var l=x+14,t=y+14;if(l+r.width>innerWidth-8)l=x-r.width-14;if(t+r.height>innerHeight-8)t=y-r.height-14;tip.style.left=Math.max(8,l)+'px';tip.style.top=Math.max(8,t)+'px'}
+function hideTip(){tip.hidden=true}
+document.addEventListener('pointermove',function(e){
+  var t=e.target&&e.target.closest?e.target.closest('[data-tip]'):null;
+  if(t)showTip(t.getAttribute('data-tip'),e.clientX,e.clientY);
+  else if(!(e.target.classList&&e.target.classList.contains('hit')))hideTip();
+});
+function niceMax(v){if(v<=0)return 1;var p=Math.pow(10,Math.floor(Math.log10(v)));var n=v/p;var m=n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10;return m*p}
+function state0(el,msg,cls){el.innerHTML='<div class="state '+(cls||'')+'">'+esc(msg)+'</div>'}
+
+function lineChart(el,o){
+  var grain=(ran||state).grain;
+  var W=Math.max(240,el.clientWidth||600),H=o.h||220,ml=o.ml||46,mr=12,mt=10,mb=24;
+  var xs=[];o.series.forEach(function(s){s.pts.forEach(function(p){if(xs.indexOf(p.x)<0)xs.push(p.x)})});xs.sort();
+  if(!xs.length){state0(el,'No rows for these filters.');return}
+  var mx=0;o.series.forEach(function(s){s.pts.forEach(function(p){if(p.y>mx)mx=p.y})});
+  var ymax=niceMax(mx),iw=W-ml-mr,ih=H-mt-mb;
+  var X=function(i){return ml+(xs.length===1?iw/2:i*iw/(xs.length-1))};
+  var Y=function(v){return mt+ih-(v/ymax)*ih};
+  var maps=o.series.map(function(s){var m={};s.pts.forEach(function(p){m[p.x]=p.y});return m});
+  var g='';
+  for(var k=0;k<=4;k++){var v=ymax*k/4,y=Y(v);g+='<line x1="'+ml+'" x2="'+(W-mr)+'" y1="'+y+'" y2="'+y+'" class="'+(k?'grid':'axis')+'"/><text x="'+(ml-6)+'" y="'+(y+4)+'" text-anchor="end" class="tick">'+esc(o.f(v))+'</text>'}
+  var step=Math.max(1,Math.ceil(xs.length/Math.max(1,Math.floor(iw/72))));
+  xs.forEach(function(x,i){if(i%step===0)g+='<text x="'+X(i)+'" y="'+(H-6)+'" text-anchor="middle" class="tick">'+dlabel(x,grain)+'</text>'});
+  o.series.forEach(function(s,si){
+    var d=xs.map(function(x,i){return (i?'L':'M')+X(i).toFixed(1)+','+Y(maps[si][x]||0).toFixed(1)}).join('');
+    if(o.area)g+='<path d="'+d+'L'+X(xs.length-1).toFixed(1)+','+Y(0)+'L'+X(0).toFixed(1)+','+Y(0)+'Z" style="fill:'+s.color+';opacity:.13"/>';
+    g+='<path d="'+d+'" fill="none" style="stroke:'+s.color+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+    var li=xs.length-1;g+='<circle cx="'+X(li)+'" cy="'+Y(maps[si][xs[li]]||0)+'" r="3.5" style="fill:'+s.color+';stroke:var(--surface)" stroke-width="2"/>';
+  });
+  g+='<line id="xh" y1="'+mt+'" y2="'+(mt+ih)+'" style="stroke:var(--ink2)" stroke-dasharray="3 3" visibility="hidden"/>';
+  o.series.forEach(function(s,si){g+='<circle class="dot" r="4" style="fill:'+s.color+';stroke:var(--surface)" stroke-width="2" visibility="hidden"/>'});
+  g+='<rect class="hit" x="'+ml+'" y="'+mt+'" width="'+iw+'" height="'+ih+'" fill="transparent"/>';
+  var legend=o.series.length>1?'<div class="legend">'+o.series.map(function(s){return '<span><i style="background:'+s.color+'"></i>'+esc(s.name)+'</span>'}).join('')+'</div>':'';
+  el.innerHTML=legend+'<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(o.label||'Line chart')+'">'+g+'</svg>';
+  var svg=el.querySelector('svg'),hit=svg.querySelector('.hit'),xh=svg.querySelector('#xh'),dots=svg.querySelectorAll('.dot');
+  function move(e){
+    var r=svg.getBoundingClientRect();var px=e.clientX-r.left;
+    var i=xs.length===1?0:Math.max(0,Math.min(xs.length-1,Math.round((px-ml)/iw*(xs.length-1))));
+    xh.setAttribute('x1',X(i));xh.setAttribute('x2',X(i));xh.setAttribute('visibility','visible');
+    var rows='';o.series.forEach(function(s,si){var v=maps[si][xs[i]]||0;dots[si].setAttribute('cx',X(i));dots[si].setAttribute('cy',Y(v));dots[si].setAttribute('visibility','visible');rows+='<div><span><i style="display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;background:'+s.color+'"></i>'+esc(s.name)+'</span><b>'+esc(o.f(v,true))+'</b></div>'});
+    showTip('<div style="color:var(--ink2)">'+(grain==='WEEK'?'Week of ':'')+dlabel(xs[i],grain)+(grain==='DAY'?' '+xs[i].slice(0,4):'')+'</div>'+rows,e.clientX,e.clientY);
+  }
+  hit.addEventListener('pointermove',move);
+  hit.addEventListener('pointerleave',function(){hideTip();xh.setAttribute('visibility','hidden');dots.forEach(function(d){d.setAttribute('visibility','hidden')})});
+}
+function hbars(el,items,f,color){
+  if(!items.length){state0(el,'No rows for these filters.');return}
+  var mx=Math.max.apply(null,items.map(function(i){return i.v}).concat([1]));
+  el.innerHTML='<div class="hb">'+items.map(function(i){return '<div class="hbr" data-tip="'+esc(i.tip)+'"><span class="hbl">'+esc(i.l)+'</span><span class="hbt"><i style="width:'+(i.v/mx*100)+'%;background:'+(color||'var(--s1)')+'"></i></span><span class="hbv">'+esc(f(i.v))+'</span></div>'}).join('')+'</div>';
+}
+function table(el,cols,rows){
+  if(!rows.length){state0(el,'No rows for these filters.');return}
+  el.innerHTML='<div class="tw"><table><thead><tr><th class="n">#</th>'+cols.map(function(c){return '<th class="'+(c.num?'n':'')+'">'+esc(c.h)+'</th>'}).join('')+'</tr></thead><tbody>'+rows.map(function(r,i){return '<tr><td class="n" style="color:var(--muted)">'+(i+1)+'</td>'+cols.map(function(c){var v=c.f?c.f(r[c.k],r):esc(r[c.k]);return '<td class="'+(c.num?'n':'')+(c.cls?' '+c.cls:'')+'"'+(c.cls==='pg'?' title="'+esc(r[c.k])+'"':'')+'>'+v+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table></div>';
+}
+function series1(rows,key,name,color){return {name:name,color:color,pts:rows.map(function(r){return {x:String(r.period).slice(0,10),y:N(r[key])}})}}
+
+/* ---------- views ---------- */
+var R={
+  kpis:function(el,rows){
+    var r=rows[0];if(!r){state0(el,'No rows for these filters.');return}
+    var a=N(r.active_users),t=N(r.transactions),s=N(r.sessions);
+    var T=[['Active users',fInt(a)],['New users',fInt(N(r.new_users))],['Sessions',fInt(s)],['Total revenue',fUsdC(N(r.total_revenue))],
+      ['Avg. order value',t?fUsd(N(r.purchase_revenue)/t):'n/a'],['Events per session',s?fDec(N(r.events)/s):'n/a'],
+      ['Transactions',fInt(t)],['ARPU',a?fUsd(N(r.total_revenue)/a):'n/a'],['Purchase revenue',fUsdC(N(r.purchase_revenue))],
+      ['Key events',fInt(N(r.key_events))],['Event count',fInt(N(r.events))],['Engagement rate',s?fPct(N(r.engaged_sessions)/s):'n/a']];
+    el.innerHTML='<dl class="kpis" style="margin:0">'+T.map(function(x){return '<div class="kpi"><dt>'+x[0]+'</dt><dd>'+esc(x[1])+'</dd></div>'}).join('')+'</dl>';
+  },
+  rev:function(el,rows){lineChart(el,{series:[series1(rows,'revenue','Revenue','var(--s1)')],f:function(v,full){return full?fUsd(v):fUsdC(v)},area:true,label:'Revenue over time',ml:54})},
+  tx:function(el,rows){lineChart(el,{series:[series1(rows,'transactions','Transactions','var(--s1)')],f:function(v,full){return full?fInt(v):fCmp(v)},area:true,label:'Transactions over time'})},
+  conv:function(el,rows){
+    el.innerHTML='<div class="minis">'+STAGES.map(function(s,i){var tot=0;rows.forEach(function(r){if(r.event_name===s[0])tot+=N(r.n)});return '<div class="mini"><div class="mh"><span>'+s[1]+'</span><b>'+fCmp(tot)+'</b></div><div id="mini'+i+'"></div></div>'}).join('')+'</div>';
+    STAGES.forEach(function(s,i){var pts=rows.filter(function(r){return r.event_name===s[0]}).map(function(r){return {x:String(r.period).slice(0,10),y:N(r.n)}});
+      var m=document.getElementById('mini'+i);
+      var all={};rows.forEach(function(r){all[String(r.period).slice(0,10)]=1});
+      var have={};pts.forEach(function(p){have[p.x]=1});Object.keys(all).forEach(function(x){if(!have[x])pts.push({x:x,y:0})});
+      lineChart(m,{series:[{name:s[1],color:s[2],pts:pts}],f:function(v,full){return full?fInt(v):fCmp(v)},h:130,area:true,label:s[1]+' over time'})});
+  },
+  chan:function(el,rows){
+    var by={};rows.forEach(function(r){(by[r.channel]=by[r.channel]||[]).push({x:String(r.period).slice(0,10),y:N(r.sessions)})});
+    var ss=CH.filter(function(c){return by[c]}).map(function(c){return {name:c,color:CHCOL[c],pts:by[c]}});
+    lineChart(el,{series:ss,f:function(v,full){return full?fInt(v):fCmp(v)},label:'Sessions by channel group'});
+  },
+  dow:function(el,rows){
+    var m={};rows.forEach(function(r){m[N(r.dow)]=N(r.transactions)});
+    var order=[[2,'Mon'],[3,'Tue'],[4,'Wed'],[5,'Thu'],[6,'Fri'],[7,'Sat'],[1,'Sun']];
+    var mx=Math.max.apply(null,order.map(function(o){return m[o[0]]||0}).concat([1]));
+    el.innerHTML='<div class="vb">'+order.map(function(o){var v=m[o[0]]||0;return '<div class="vbc" data-tip="'+o[1]+': '+fInt(v)+' transactions"><span class="vbv">'+fCmp(v)+'</span><span class="vbt"><i style="height:'+(v/mx*100)+'%;background:var(--s1)"></i></span><span class="vbl">'+o[1]+'</span></div>'}).join('')+'</div>';
+  },
+  srcbars:function(el,rows){hbars(el,rows.slice(0,8).map(function(r){return {l:r.source_medium,v:N(r.sessions),tip:r.source_medium+': '+fInt(N(r.sessions))+' sessions, '+fInt(N(r.transactions))+' transactions'}}),fCmp)},
+  srctab:function(el,rows){table(el,[{k:'source_medium',h:'Source / medium',cls:'pg'},{k:'sessions',h:'Sessions',num:1,f:function(v){return fInt(N(v))}},{k:'transactions',h:'Transactions',num:1,f:function(v){return fInt(N(v))}},{k:'revenue',h:'Revenue',num:1,f:function(v){return fUsd(N(v))}}],rows)},
+  device:function(el,rows){hbars(el,rows.map(function(r){return {l:r.dim,v:N(r.sessions),tip:r.dim+': '+fInt(N(r.sessions))+' sessions, '+fInt(N(r.transactions))+' transactions'}}),fCmp)},
+  geobars:function(el,rows){hbars(el,rows.slice(0,10).map(function(r){return {l:r.dim,v:N(r.sessions),tip:r.dim+': '+fInt(N(r.sessions))+' sessions, '+fInt(N(r.transactions))+' transactions'}}),fCmp)},
+  geotab:function(el,rows){table(el,[{k:'dim',h:'Country'},{k:'sessions',h:'Sessions',num:1,f:function(v){return fInt(N(v))}},{k:'transactions',h:'Transactions',num:1,f:function(v){return fInt(N(v))}},{k:'revenue',h:'Revenue',num:1,f:function(v){return fUsd(N(v))}}],rows)},
+  seo:function(el,rows){lineChart(el,{series:[series1(rows,'transactions','Organic transactions','var(--s1)')],f:function(v,full){return full?fInt(v):fCmp(v)},area:true,label:'Organic transactions over time'})},
+  seobig:function(el,rows){var r=rows[0]||{};var o=N(r.organic_transactions),t=N(r.transactions);el.innerHTML='<div class="big"><b>'+fCmp(o)+'</b><span>transactions from organic traffic</span><span>'+fCmp(t)+' total transactions'+(t?' ('+fPct(o/t)+' organic)':'')+'</span></div>'},
+  pages:function(el,rows){table(el,[{k:'page',h:'Page path',cls:'pg'},{k:'new_users',h:'New users',num:1,f:function(v){return fInt(N(v))}},{k:'sessions',h:'Sessions',num:1,f:function(v){return fInt(N(v))}},{k:'views',h:'Views',num:1,f:function(v){return fInt(N(v))}},{k:'transactions',h:'Transactions',num:1,f:function(v){return fInt(N(v))}},{k:'revenue',h:'Total revenue',num:1,f:function(v){return fUsd(N(v))}}],rows)},
+  events:function(el,rows){table(el,[{k:'event_name',h:'Event name'},{k:'event_name',h:'Key event',f:function(v){return KEY_EVENTS.indexOf(v)>=0?'<span class="pill">Yes</span>':'<span style="color:var(--muted)">No</span>'}},{k:'event_count',h:'Event count',num:1,f:function(v){return fInt(N(v))}},{k:'users',h:'Users',num:1,f:function(v){return fInt(N(v))}},{k:'event_count',h:'Events per user',num:1,f:function(v,r){return N(r.users)?fDec(N(v)/N(r.users)):''}},{k:'sessions',h:'Sessions',num:1,f:function(v){return fInt(N(v))}},{k:'revenue',h:'Event revenue',num:1,f:function(v){return fUsd(N(v))}}],rows)}
+};
+R.os=R.device;R.browser=R.device;
+
+var LAYOUT=[
+ {h:'Overview',v:[
+  ['kpis',12,'At a glance','kpi'],['rev',6,'Revenue over time','trend'],['tx',6,'Transactions over time','trend'],
+  ['conv',12,'Conversion events','conv'],['chan',8,'Where is traffic coming from?','chan'],['dow',4,'When are conversions most active?','dow'],
+  ['srcbars',5,'Where is traffic Source / Medium?','src'],['srctab',7,'Source / medium detail','src']]},
+ {h:'Who’s your audience?',v:[
+  ['device',4,'What devices are people using?','dev'],['os',4,'Which operating systems?','os'],['browser',4,'Which browsers?','br'],
+  ['geobars',5,'Where do they live?','geo'],['geotab',7,'Countries','geo']]},
+ {h:'SEO',v:[['seo',8,'Organic transactions','seo'],['seobig',4,'How many transactions from organic traffic?','kpi']]},
+ {h:'Pages',v:[['pages',12,'How do pages get traffic?','pages']]},
+ {h:'Events',v:[['events',12,'Events','events']]}
+];
+var VIEWS=[];
+function build(){
+  var app=$('#app'),h='';
+  LAYOUT.forEach(function(s){
+    h+='<div class="sec">'+s.h+'</div><div class="grid">';
+    s.v.forEach(function(v){VIEWS.push({id:v[0],q:v[3]});
+      h+='<section class="card" style="--span:'+v[1]+'" id="c-'+v[0]+'"><div class="ch"><h2>'+v[2]+'</h2><button class="sqlb" type="button" data-sql="'+v[0]+'" aria-expanded="false">SQL</button></div><div class="viz" id="v-'+v[0]+'"></div><div class="sqlp" id="s-'+v[0]+'" hidden></div></section>'});
+    h+='</div>';
+  });
+  app.innerHTML=h;
+}
+function renderView(v){
+  var el=document.getElementById('v-'+v.id);if(!el)return;
+  var st=status[v.q];
+  if(st==='loading')return state0(el,'Running query…');
+  if(st==='error'){var e=errors[v.q]||{};return state0(el,errText(e,true),'err')}
+  if(st==='ok'){try{if(!data[v.q].length&&v.id!=='kpis'&&v.id!=='seobig'){return state0(el,'No rows for these filters.')}R[v.id](el,data[v.q])}catch(x){state0(el,'This view could not be drawn from the result.','err')}return}
+  state0(el,mcp?'Enter your project ID and choose Run queries.':'Waiting for a BigQuery connection. The SQL button still shows this card’s query.');
+}
+function renderAll(q){VIEWS.forEach(function(v){if(!q||v.q===q)renderView(v)})}
+
+/* ---------- SQL panels ---------- */
+function openSql(id){
+  var v=VIEWS.filter(function(x){return x.id===id})[0],p=document.getElementById('s-'+id),b=document.querySelector('[data-sql="'+id+'"]');
+  if(!p.hidden){p.hidden=true;b.setAttribute('aria-expanded','false');return}
+  p.hidden=false;b.setAttribute('aria-expanded','true');fillSql(v);
+}
+function fillSql(v){
+  var p=document.getElementById('s-'+v.id);if(p.hidden)return;
+  p.innerHTML='<div class="row"><span>Standard SQL, current filters</span><button class="sqlb" type="button" data-copy="'+v.id+'">Copy</button></div><pre></pre>';
+  p.querySelector('pre').textContent=Q[v.q](readState());
+}
+function fillAllSql(){VIEWS.forEach(fillSql)}
+document.addEventListener('click',function(e){
+  var b=e.target.closest&&e.target.closest('[data-sql]');if(b){openSql(b.getAttribute('data-sql'));return}
+  var c=e.target.closest&&e.target.closest('[data-copy]');
+  if(c){var pre=document.querySelector('#s-'+c.getAttribute('data-copy')+' pre');var txt=pre.textContent;
+    var done=function(){c.textContent='Copied';setTimeout(function(){c.textContent='Copy'},1400)};
+    var fb=function(){var r=document.createRange();r.selectNodeContents(pre);var s=getSelection();s.removeAllRanges();s.addRange(r);c.textContent='Selected'};
+    try{navigator.clipboard.writeText(txt).then(done,fb)}catch(x){fb()}}
+});
+
+/* ---------- toolbar ---------- */
+function readState(){
+  var S={project:$('#project').value.trim(),start:$('#start').value||MIN,end:$('#end').value||MAX,grain:$('#grain').value,channel:$('#channel').value,country:$('#country').value.trim(),device:$('#device').value};
+  var ok=/^\d{4}-\d{2}-\d{2}$/;
+  if(!ok.test(S.start))S.start=MIN;if(!ok.test(S.end))S.end=MAX;
+  if(S.start<MIN)S.start=MIN;if(S.end>MAX)S.end=MAX;if(S.start>S.end){var t=S.start;S.start=S.end;S.end=t}
+  return S;
+}
+var PRE={full:[MIN,MAX],nov:['2020-11-01','2020-11-30'],dec:['2020-12-01','2020-12-31'],jan:['2021-01-01','2021-01-31']};
+function initTool(){
+  var s=$('#start'),e=$('#end');s.min=e.min=MIN;s.max=e.max=MAX;s.value=MIN;e.value=MAX;
+  var ch=$('#channel');CH.forEach(function(c){var o=document.createElement('option');o.textContent=c;ch.appendChild(o)});
+  try{var p=localStorage.getItem('ecom.project');if(p)$('#project').value=p}catch(x){}
+  $('#preset').addEventListener('change',function(){var p=PRE[this.value];if(p){s.value=p[0];e.value=p[1]}fillAllSql()});
+  [s,e].forEach(function(i){i.addEventListener('change',function(){$('#preset').value='custom';fillAllSql()})});
+  ['grain','channel','device','country'].forEach(function(id){$('#'+id).addEventListener('change',fillAllSql)});
+  $('#tool').addEventListener('submit',function(ev){ev.preventDefault();runAll()});
+}
+
+/* ---------- connector ---------- */
+function banner(msg){var b=$('#banner');if(!msg){b.hidden=true;return}b.textContent=msg;b.hidden=false}
+function errText(e,short){
+  var c=e.code;
+  if(c==='format')return 'The query ran, but the result format was not recognised.';
+  if(c==='server_not_connected')return short?'Not loaded: BigQuery connector missing.':'Add Google Cloud BigQuery in claude.ai Settings, Connectors, then reload this page.';
+  if(c==='needs_reauth')return short?'Not loaded: reconnect BigQuery.':'Reconnect Google Cloud BigQuery in claude.ai Settings, Connectors, then run again.';
+  if(c==='selection_required')return short?'Not loaded: choose a connector.':'You have more than one Google Cloud BigQuery connector. Choose one when prompted, then run again.';
+  if(c==='not_in_manifest'||c==='consent_required')return short?'Not loaded: access not allowed.':'This page was not allowed to use BigQuery. Allow it from the artifact’s Permissions menu, then run again.';
+  if(c==='approval_required')return short?'Not loaded: needs approval.':'BigQuery access needs your approval. Choose Run queries again and allow it when asked.';
+  if(c==='blocked_by_policy')return short?'Not loaded: blocked by policy.':'Your organisation blocks BigQuery queries from artifacts.';
+  if(c==='tool_error')return 'BigQuery reported: '+String(e.message||'query failed').replace(/\s+/g,' ').slice(0,220);
+  if(c==='server_unavailable')return 'BigQuery did not answer in time. Run again in a moment.';
+  return 'Query failed'+(e.message?': '+String(e.message).slice(0,160):'.');
+}
+async function keys(){
+  if(argKeys)return argKeys;
+  var q='query',p='projectId',verified=false;
+  try{var d=await mcp.describeTool(SERVER,'execute_sql_readonly');var props=Object.keys((d.inputSchema&&d.inputSchema.properties)||{});
+    q=props.find(function(k){return /^(query|sql|statement)$/i.test(k)})||props.find(function(k){return /query|sql/i.test(k)})||q;
+    p=props.find(function(k){return /project/i.test(k)})||null;verified=true}catch(x){}
+  if(!verified)p='projectId';
+  argKeys={q:q,p:p};return argKeys;
+}
+function extract(res){
+  var cands=[res.payload,res.structuredContent];
+  (res.content||[]).forEach(function(b){if(b&&b.type==='text')cands.push(b.text)});
+  for(var i=0;i<cands.length;i++){var r=toRows(cands[i],0);if(r)return r}
+  return null;
+}
+function toRows(p,depth){
+  if(depth>4||p==null)return null;
+  if(typeof p==='string'){try{p=JSON.parse(p)}catch(x){return null}}
+  if(Array.isArray(p)){if(!p.length)return [];if(p.every(function(r){return r&&typeof r==='object'&&!Array.isArray(r)&&!('f' in r)}))return p;return null}
+  if(typeof p!=='object')return null;
+  var fields=p.schema&&p.schema.fields;
+  if(fields&&Array.isArray(p.rows)){return p.rows.map(function(r){var o={};if(r.f){fields.forEach(function(f,i){o[f.name]=r.f[i]&&r.f[i].v})}else{Object.keys(r).forEach(function(k){o[k]=r[k]})}return o})}
+  var ks=['rows','data','result','results','records','payload'];
+  for(var i=0;i<ks.length;i++){if(p[ks[i]]!=null){var r=toRows(p[ks[i]],depth+1);if(r)return r}}
+  if(fields&&Array.isArray(p.rows)===false&&p.totalRows==='0')return [];
+  return null;
+}
+async function call(sql){
+  var k=await keys(),input={timeoutMs:120000};input[k.q]=sql;if(k.p)input[k.p]=ran.project;
+  try{return await mcp.callTool(SERVER,'execute_sql_readonly',input)}
+  catch(e){if(e&&e.retryable){await new Promise(function(r){setTimeout(r,Math.min(e.retryAfterMs||1500,5000))});return await mcp.callTool(SERVER,'execute_sql_readonly',input)}throw e}
+}
+async function exec(q,id){
+  try{var res=await call(Q[q](ran));if(id!==runId)return;
+    if(res&&res.payload&&res.payload.job_complete===false)throw {code:'tool_error',message:'The query is still running after 2 minutes. Run again to retry.'};
+    var rows=extract(res);if(!rows)throw {code:'format',message:'unrecognised result'};data[q]=rows;status[q]='ok'}
+  catch(e){if(id!==runId)return;status[q]='error';errors[q]=e||{}}
+  renderAll(q);
+}
+async function runAll(){
+  var S=readState();state=S;
+  if(!S.project){banner('Enter the Google Cloud project ID that should run the queries. BigQuery bills the query to that project, and the public sample itself is free to read.');$('#project').focus();return}
+  try{localStorage.setItem('ecom.project',S.project)}catch(x){}
+  if(!mcp){banner('Live queries are not available in this view. Open the artifact in claude.ai with the Google Cloud BigQuery connector added. Each card’s SQL button still works in the BigQuery console.');return}
+  banner('');ran=S;var id=++runId;var btn=$('#run');btn.disabled=true;btn.textContent='Running…';
+  var qs=Object.keys(Q);qs.forEach(function(q){status[q]='loading';delete errors[q]});renderAll();
+  await exec('kpi',id);
+  if(id!==runId)return;
+  if(status.kpi==='error'&&FATAL[errors.kpi.code]){banner(errText(errors.kpi,false));qs.forEach(function(q){if(q!=='kpi')status[q]='idle'});renderAll();btn.disabled=false;btn.textContent='Run queries';return}
+  var rest=qs.filter(function(q){return q!=='kpi'}),i=0;
+  async function worker(){while(i<rest.length&&id===runId){var q=rest[i++];await exec(q,id)}}
+  await Promise.all([worker(),worker(),worker(),worker()]);
+  if(id!==runId)return;
+  var failed=qs.filter(function(q){return status[q]==='error'});
+  if(failed.length===qs.length)banner(errText(errors[failed[0]],false));
+  else if(failed.length)banner(failed.length+' of '+qs.length+' queries failed. The cards that loaded are current.');
+  if(data.geo&&!state.country){var dl=$('#countries');dl.innerHTML='';data.geo.forEach(function(r){var o=document.createElement('option');o.value=r.dim;dl.appendChild(o)})}
+  btn.disabled=false;btn.textContent='Run queries';
+}
+
+/* ---------- boot ---------- */
+build();initTool();renderAll();fillAllSql();
+(async function(){
+  try{mcp=window.claude&&window.claude.use?await window.claude.use('mcp'):null}catch(x){mcp=null}
+  if(!mcp){banner('Live queries are not available in this view. Open the artifact in claude.ai with the Google Cloud BigQuery connector added. Each card’s SQL button still works in the BigQuery console.');renderAll();return}
+  try{var l=await mcp.listTools(SERVER);var s=l.servers.filter(function(x){return x.server===SERVER})[0];
+    if(!s)banner('Google Cloud BigQuery is not connected for your account. Add it in claude.ai Settings, Connectors, then reload.');
+    else if(s.authStatus==='needs_reauth')banner('Reconnect Google Cloud BigQuery in claude.ai Settings, Connectors, then reload.')}catch(x){}
+  renderAll();
+})();
+var rt=null,lastW=0;
+if(window.ResizeObserver){new ResizeObserver(function(){var w=document.body.clientWidth;if(w===lastW)return;lastW=w;clearTimeout(rt);rt=setTimeout(function(){Object.keys(status).forEach(function(q){if(status[q]==='ok')renderAll(q)})},160)}).observe(document.body)}
+})();
+</script>
+
+</body></html>
